@@ -1,0 +1,28 @@
+<% require 'open-uri' %>
+<% require 'json' %>
+
+<% if params[:city] %>
+<% input = params[:city] + ", " + params[:state] %>
+<% else %>
+<% input = params[:zipcode] %>
+<% end %>
+
+<% input %>
+<% location_data = open("http://maps.googleapis.com/maps/api/geocode/json?address=#{input}&sensor=true").read %>
+<% ldata = JSON.parse(location_data) %>
+<% displayname = ldata["results"][0]["formatted_address"] %> 
+
+<% location = URI.escape(input) %>
+<% weather_data = open("http://api.openweathermap.org/data/2.5/weather?q=#{location}&units=imperial").read %>
+<% wdata = JSON.parse(weather_data) %>
+
+<% temp = wdata["main"]["temp"] %> 
+<% humidity = wdata["main"]["humidity"] %> 
+<% description = wdata["weather"][0]["description"] %>
+<% windspeed = wdata["wind"]["speed"] %>
+
+<h1> Current Conditions in <%= displayname %> </h1>
+
+<p> Temperature: <%= temp %>&deg; F</p>
+<p> Humidity: <%= humidity %>% </p>
+<p> General Description: <%= description %> with <%= windspeed.round(0) %> mph winds</p>

@@ -1,0 +1,14 @@
+<!-- Get saluatation parameter -->
+<% salutation = params[:salutation] %>
+
+<!-- If salutation parameter exists, display it's value, else display default -->
+<% if salutation %>
+
+<h1> <%= salutation %> </h1>
+
+<% else %>
+<!-- default -->
+<h1> Hello </h1>
+
+<% end %>
+
