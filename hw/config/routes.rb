@@ -1,12 +1,16 @@
 Rails.application.routes.draw do
   
+  #no root set for this website
+
   get("/greet", :controller => 'greetings', :action => 'simplegreet')
 
   get("/contact", :controller => 'contacts', :action => 'contact')
   get("/contact_submitted", :controller => 'contacts', :action => 'contact_sub')
   
   get "/weather", :controller => 'weatherdetails', :action => 'submit'
-  get "/current_conditions", :controller => 'weatherdetails', :action => 'show'
+  
+  # Short cut
+  get "/current_conditions" => 'weatherdetails#show'
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 

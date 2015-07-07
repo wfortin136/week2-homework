@@ -1,28 +1,65 @@
-<% require 'open-uri' %>
-<% require 'json' %>
+<%
+  ## The way this is currently implemented, there is a lot of control logic within
+  ## the view code. I believe this should be included within the controller portion
+  ## where the location is checked and redirected if the location is not valid.
+  ## However, I wasnt clear on how to pass arguments from the control methods to the view
+  ## code. So for now, I did a somewhat lazy implementation where an invalid location produces
+  ## a results page the generates an error with a url redirect.
+  
+  ## Additionally, because I included so much ruby code within the html document, I "blocked" 
+  ## the portions of the code with the ruby qualifiers to make it easier to read and 
+  ## differentiate between ruby and html as opposed to using the ruby qualifiers for 
+  ## each ruby line. Admittedly, its not as pretty as I had hoped. 
+%>
 
-<% if params[:city] %>
-<% input = params[:city] + ", " + params[:state] %>
-<% else %>
-<% input = params[:zipcode] %>
-<% end %>
+<%
+  ##Ruby Code for obtaining location and weather data
 
-<% input %>
-<% location_data = open("http://maps.googleapis.com/maps/api/geocode/json?address=#{input}&sensor=true").read %>
-<% ldata = JSON.parse(location_data) %>
-<% displayname = ldata["results"][0]["formatted_address"] %> 
+  require 'open-uri' 
+  require 'json' 
+  
+  ## Check what was used for location input and set to input
+  if params[:city]
+    input = params[:city] + ", " + params[:state]
+  else
+    input = params[:zipcode] 
+  end 
 
-<% location = URI.escape(input) %>
-<% weather_data = open("http://api.openweathermap.org/data/2.5/weather?q=#{location}&units=imperial").read %>
-<% wdata = JSON.parse(weather_data) %>
+  ## Get additional details on the location that was submitted
+  location_data = open("http://maps.googleapis.com/maps/api/geocode/json?address=#{input}&sensor=true").read
+  ldata = JSON.parse(location_data) 
+  status = ldata["status"]
+%>
 
-<% temp = wdata["main"]["temp"] %> 
-<% humidity = wdata["main"]["humidity"] %> 
-<% description = wdata["weather"][0]["description"] %>
-<% windspeed = wdata["wind"]["speed"] %>
+<%
+  ## Check if location is valid
+  ## If not valid, go back to weather page with error statement
+  ## If valid, continue populating this page
 
-<h1> Current Conditions in <%= displayname %> </h1>
+  if status == "ZERO_RESULTS" 
+%>
+    <h1> Not a Valid a Location. </h1>
+    <h2> <%= link_to "Please input again", "weather" %> </h2> 
+<%
+  else
+    displayname = ldata["results"][0]["formatted_address"] 
 
-<p> Temperature: <%= temp %>&deg; F</p>
-<p> Humidity: <%= humidity %>% </p>
-<p> General Description: <%= description %> with <%= windspeed.round(0) %> mph winds</p>
+    location = URI.escape(input) 
+    weather_data = open("http://api.openweathermap.org/data/2.5/weather?q=#{location}&units=imperial").read 
+    wdata = JSON.parse(weather_data) 
+
+    temp = wdata["main"]["temp"] 
+    humidity = wdata["main"]["humidity"] 
+    description = wdata["weather"][0]["description"] 
+    windspeed = wdata["wind"]["speed"]
+%>  
+  
+    <h1> Current Conditions in <%= displayname %> </h1>
+
+    <p> Temperature: <%= temp %>&deg; F</p>
+    <p> Humidity: <%= humidity %>% </p>
+    <p> General Description: <%= description %> with <%#= windspeed.round(0) %> mph winds</p>
+  
+<% 
+  end
+%>
